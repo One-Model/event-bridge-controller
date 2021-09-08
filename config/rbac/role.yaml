@@ -6,29 +6,9 @@ metadata:
   creationTimestamp: null
   name: manager-role
 rules:
-- apiGroups:
-  - x.toolkit.fluxcd.io
-  resources:
+- resources:
   - events
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
-- apiGroups:
-  - x.toolkit.fluxcd.io
-  resources:
-  - events/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - x.toolkit.fluxcd.io
-  resources:
-  - events/status
-  verbs:
-  - get
-  - patch
-  - update

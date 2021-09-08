@@ -51,6 +51,7 @@ var (
 
 func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
+
 	//+kubebuilder:scaffold:scheme
 }
 

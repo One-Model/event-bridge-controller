@@ -4,13 +4,7 @@ layout:
 projectName: event-bridge-controller
 repo: github.com/one-model/event-bridge-controller
 resources:
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: toolkit.fluxcd.io
-  group: x
+- controller: true
   kind: Event
-  path: github.com/one-model/event-bridge-controller/api/v1alpha1
-  version: v1alpha1
+  version: v1
 version: "3"
