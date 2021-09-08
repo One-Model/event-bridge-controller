@@ -28,7 +28,11 @@ spec:
       - command:
         - /manager
         args:
-        - --leader-elect
+        - --events-addr=http://notification-controller/
+        - --watch-all-namespaces
+        - --log-level=info
+        - --log-encoding=json
+        - --enable-leader-election
         image: controller:latest
         name: manager
         securityContext:
@@ -36,21 +40,23 @@ spec:
         livenessProbe:
           httpGet:
             path: /healthz
-            port: 8081
-          initialDelaySeconds: 15
-          periodSeconds: 20
+            port: healthz
+        ports:
+        - containerPort: 8080
+          name: http-prom
+        - containerPort: 9440
+          name: healthz
+          protocol: TCP
         readinessProbe:
           httpGet:
             path: /readyz
-            port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 10
+            port: healthz
         resources:
           limits:
             cpu: 100m
-            memory: 30Mi
+            memory: 256Mi
           requests:
             cpu: 100m
-            memory: 20Mi
+            memory: 64Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
