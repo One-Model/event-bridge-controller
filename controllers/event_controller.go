@@ -22,7 +22,7 @@ import (
 
 	"github.com/fluxcd/pkg/runtime/events"
 	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
+	eventsv1 "k8s.io/api/events/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,7 +42,7 @@ type EventReconcilerOptions struct {
 	MaxConcurrentReconciles int
 }
 
-//+kubebuilder:rbac:resources=events,verbs=get;list;watch
+//+kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -56,7 +56,7 @@ type EventReconcilerOptions struct {
 func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := logr.FromContext(ctx)
 
-	var event corev1.Event
+	var event eventsv1.Event
 	if err := r.Get(ctx, req.NamespacedName, &event); err != nil {
 		log.Error(err, "unable to fect Event")
 
@@ -67,11 +67,11 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	logInfo = append(logInfo,
 		"type", event.Type,
 		"reason", event.Reason,
-		"message", event.Message,
-		"involvedObject", event.InvolvedObject,
+		"note", event.Note,
+		"regarding", event.Regarding,
 	)
 
-	parts := strings.SplitN(event.InvolvedObject.APIVersion, "/", 2)
+	parts := strings.SplitN(event.Regarding.APIVersion, "/", 2)
 	if parts[0] == "toolkit.fluxcd.io" {
 		// It's expected that events on "toolkit.fluxcd.io" resources will be
 		// sent to the notification-controller by the controller responsible for
@@ -83,11 +83,11 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	if r.ExternalEventRecorder != nil {
 		severity := events.EventSeverityInfo
-		if event.Type == corev1.EventTypeWarning {
+		if event.Type == "Warning" {
 			severity = events.EventSeverityError
 		}
 
-		if err := r.ExternalEventRecorder.Eventf(event.InvolvedObject, nil, severity, event.Reason, event.Message); err != nil {
+		if err := r.ExternalEventRecorder.Eventf(event.Regarding, nil, severity, event.Reason, event.Note); err != nil {
 			log.Error(err, "unable to send event")
 		}
 	}
@@ -99,7 +99,7 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 func (r *EventReconciler) SetupWithManager(mgr ctrl.Manager, opts EventReconcilerOptions) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		// Uncomment the following line adding a pointer to an instance of the controlled resource as an argument
-		For(&corev1.Event{}).
+		For(&eventsv1.Event{}).
 		WithEventFilter(predicate.Funcs{
 			DeleteFunc:  func(de event.DeleteEvent) bool { return false },
 			GenericFunc: func(ge event.GenericEvent) bool { return false },

@@ -5,6 +5,7 @@ projectName: event-bridge-controller
 repo: github.com/one-model/event-bridge-controller
 resources:
 - controller: true
+  group: events.k8s.io
   kind: Event
   version: v1
 version: "3"
