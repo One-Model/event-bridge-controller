@@ -76,10 +76,10 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// It's expected that events on "toolkit.fluxcd.io" resources will be
 		// sent to the notification-controller by the controller responsible for
 		// the resource.
-		log.Info("Skipping event for 'toolkit.fluxcd.io' API group", logInfo)
+		log.Info("Skipping event for 'toolkit.fluxcd.io' API group", logInfo...)
 	}
 
-	log.Info("Received event", logInfo)
+	log.Info("Received event", logInfo...)
 
 	if r.ExternalEventRecorder != nil {
 		severity := events.EventSeverityInfo
