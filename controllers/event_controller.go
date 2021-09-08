@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"strings"
 
 	"github.com/fluxcd/pkg/runtime/events"
 	"github.com/go-logr/logr"
@@ -62,12 +63,23 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	log.Info("Received event",
+	var logInfo []interface{}
+	logInfo = append(logInfo,
 		"type", event.Type,
 		"reason", event.Reason,
 		"message", event.Message,
 		"involvedObject", event.InvolvedObject,
 	)
+
+	parts := strings.SplitN(event.InvolvedObject.APIVersion, "/", 2)
+	if parts[0] == "toolkit.fluxcd.io" {
+		// It's expected that events on "toolkit.fluxcd.io" resources will be
+		// sent to the notification-controller by the controller responsible for
+		// the resource.
+		log.Info("Skipping event for 'toolkit.fluxcd.io' API group", logInfo)
+	}
+
+	log.Info("Received event", logInfo)
 
 	if r.ExternalEventRecorder != nil {
 		severity := events.EventSeverityInfo
