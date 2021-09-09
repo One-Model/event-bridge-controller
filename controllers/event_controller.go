@@ -31,6 +31,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
+const toolkitApiGroup = "toolkit.fluxcd.io"
+
 // EventReconciler reconciles a Event object
 type EventReconciler struct {
 	client.Client
@@ -58,7 +60,7 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	var event eventsv1.Event
 	if err := r.Get(ctx, req.NamespacedName, &event); err != nil {
-		log.Error(err, "unable to fect Event")
+		log.Error(err, "unable to fetch Event")
 
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -72,7 +74,7 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	)
 
 	parts := strings.SplitN(event.Regarding.APIVersion, "/", 2)
-	if parts[0] == "toolkit.fluxcd.io" {
+	if parts[0] == "toolkitApiGroup" || strings.HasSuffix(parts[0], "."+toolkitApiGroup) {
 		// It's expected that events on "toolkit.fluxcd.io" resources will be
 		// sent to the notification-controller by the controller responsible for
 		// the resource.
