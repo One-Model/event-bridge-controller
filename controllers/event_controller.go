@@ -79,6 +79,7 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// sent to the notification-controller by the controller responsible for
 		// the resource.
 		log.Info("Skipping event for 'toolkit.fluxcd.io' API group", logInfo...)
+		return ctrl.Result{}, nil
 	}
 
 	log.Info("Received event", logInfo...)
